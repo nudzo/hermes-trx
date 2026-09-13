@@ -6,7 +6,7 @@ ARG OBSCURA_VERSION
 
 USER root
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates curl httpie \
+    && apt-get install -y --no-install-recommends ca-certificates curl httpie fzf shfmt \
     && test -n "${OBSCURA_VERSION}" \
     && case "${TARGETARCH}" in \
         amd64) obscura_arch=x86_64 ;; \
@@ -25,6 +25,10 @@ RUN apt-get update \
     && tar -xzf /tmp/obscura-skills.tar.gz -C /opt/hermes/skills --strip-components=2 \
         "obscura-${OBSCURA_VERSION#v}/skills/obscura" \
     && rm /tmp/obscura-skills.tar.gz \
+    && npm install -g bun \
+    && uv pip install pyright \
     && rm -rf /var/lib/apt/lists/*
 
 USER hermes
+RUN bun install -g bash-language-server \
+    && bun install -g @ast-grep/cli
