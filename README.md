@@ -61,7 +61,7 @@ docker run -it --rm ghcr.io/nudzo/hermes-trx:latest
 Images are tagged alongside upstream Hermes releases:
 
 ```bash
-docker pull ghcr.io/nudzo/hermes-trx:v0.1.0
+  docker pull ghcr.io/nudzo/hermes-trx:v2026.9.11
 ```
 
 ---
