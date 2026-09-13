@@ -1,12 +1,13 @@
 ARG HERMES_VERSION=latest
-ARG OBSCURA_VERSION=v0.2.2
 FROM nousresearch/hermes-agent:${HERMES_VERSION}
 
 ARG TARGETARCH
+ARG OBSCURA_VERSION
 
 USER root
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates curl httpie \
+    && test -n "${OBSCURA_VERSION}" \
     && case "${TARGETARCH}" in \
         amd64) obscura_arch=x86_64 ;; \
         arm64) obscura_arch=aarch64 ;; \
