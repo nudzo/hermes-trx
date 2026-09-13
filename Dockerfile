@@ -26,9 +26,9 @@ RUN apt-get update \
         "obscura-${OBSCURA_VERSION#v}/skills/obscura" \
     && rm /tmp/obscura-skills.tar.gz \
     && npm install -g bun \
+    && npm install -g bash-language-server \
+    && npm install -g @ast-grep/cli \
     && uv pip install pyright \
     && rm -rf /var/lib/apt/lists/*
 
-USER hermes
-RUN bun install -g bash-language-server \
-    && bun install -g @ast-grep/cli
+# USER hermes # base image starting under `root` user
