@@ -15,9 +15,20 @@ permissions:
 jobs:
   resolve-upstream-tags:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       matrix: ${{ steps.tags.outputs.matrix }}
+      obscura_version: ${{ steps.obscura.outputs.release }}
     steps:
+      - name: Resolve latest stable Obscura release
+        id: obscura
+        uses: pozetroninc/github-action-get-latest-release@2a61c339ea7ef0a336d1daa35ef0cb1418e7676c # v0.8.0 release
+        with:
+          repository: h4ckf0r0day/obscura
+          excludes: prerelease, draft
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Resolve latest and previous Hermes tags
         id: tags
         uses: actions/github-script@v7
@@ -74,5 +85,6 @@ jobs:
           platforms: linux/amd64,linux/arm64
           build-args: |
             HERMES_VERSION=${{ matrix.upstream_tag }}
+            OBSCURA_VERSION=${{ needs.resolve-upstream-tags.outputs.obscura_version }}
           tags: |
             ghcr.io/${{ github.repository }}:${{ matrix.image_tag }}
