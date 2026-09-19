@@ -29,6 +29,9 @@ RUN apt-get update \
     && npm install -g bash-language-server \
     && npm install -g @ast-grep/cli \
     && uv pip install pyright \
+    && uv pip install "git+https://github.com/derivexyz/derive-py.git@38d8ef6645d7711185b0cd7b64efb85bce8e6158" \
+    && uv pip install TA-Lib \
+    && uv pip install pyhood \
     && rm -rf /var/lib/apt/lists/*
 
 # USER hermes # base image starting under `root` user

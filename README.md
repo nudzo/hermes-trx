@@ -30,6 +30,9 @@ An extended multi-architecture container image for [NousResearch Hermes Agent](h
 - **Bash Language Server (`bash-language-server`)**: Language Server Protocol (LSP) support for shell scripts.
 - **ast-grep (`@ast-grep/cli`)**: Fast, AST-powered code search and refactoring tool.
 - **Pyright (`pyright`)**: Static type checker and language server for Python.
+- **Derive Python SDK (`derive-py`)**: Installed from a pinned Git revision for reproducible image builds.
+- **TA-Lib (`TA-Lib`)**: Python bindings for the TA-Lib technical analysis library.
+- **pyhood (`pyhood`)**: Additional Python tooling included in the image.
 
 ---
 
