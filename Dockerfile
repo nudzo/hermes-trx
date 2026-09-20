@@ -37,7 +37,7 @@ RUN apt-get update \
     && sha256sum -c /tmp/gh.sha256 \
     && tar -xzf /tmp/gh.tar.gz -C /usr/local/bin --strip-components=2 \
         "gh_${GH_VERSION#v}_linux_${TARGETARCH}/bin/gh" \
-    && rm /tmp/gh.tar.gz /tmp/gh_checksums.txt /tmp/gh.sha256
+    && rm /tmp/gh.tar.gz /tmp/gh_checksums.txt /tmp/gh.sha256 \
     && git config --system credential."https://github.com".helper "!/usr/local/bin/gh auth git-credential" \
     && git config --system credential."https://gist.github.com".helper "!/usr/local/bin/gh auth git-credential" \
     && npm install -g bun \
