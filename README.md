@@ -22,6 +22,7 @@ An extended multi-architecture container image for [NousResearch Hermes Agent](h
 - **HTTPie (`httpie`)**: User-friendly HTTP client for API interaction and testing.
 - **fzf (`fzf`)**: Command-line fuzzy finder.
 - **GitHub CLI (`gh`)**: GitHub's official CLI at `/usr/local/bin/gh`, for PRs, issues, releases, and API access. `git` is wired to use `gh` as its HTTPS credential helper, so one token authenticates both.
+- **shfmt (`shfmt`)**: Shell script formatter and parser.
 - **curl & CA Certificates**: Secure web transfers and up-to-date certificate authorities.
 
 ### 3. Runtimes, AST Tools & Language Servers
