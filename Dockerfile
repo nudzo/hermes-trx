@@ -2,6 +2,7 @@ ARG HERMES_VERSION=latest
 FROM nousresearch/hermes-agent:${HERMES_VERSION}
 
 ARG TARGETARCH
+ARG GH_VERSION=v2.101.0
 ARG OBSCURA_VERSION
 
 USER root
@@ -25,6 +26,20 @@ RUN apt-get update \
     && tar -xzf /tmp/obscura-skills.tar.gz -C /opt/hermes/skills --strip-components=2 \
         "obscura-${OBSCURA_VERSION#v}/skills/obscura" \
     && rm /tmp/obscura-skills.tar.gz \
+    && curl --fail --location --retry 3 \
+        "https://github.com/cli/cli/releases/download/${GH_VERSION}/gh_${GH_VERSION#v}_linux_${TARGETARCH}.tar.gz" \
+        -o /tmp/gh.tar.gz \
+    && curl --fail --location --retry 3 \
+        "https://github.com/cli/cli/releases/download/${GH_VERSION}/gh_${GH_VERSION#v}_checksums.txt" \
+        -o /tmp/gh_checksums.txt \
+    && awk -v file="gh_${GH_VERSION#v}_linux_${TARGETARCH}.tar.gz" '$2 == file { print $1 "  /tmp/gh.tar.gz" }' /tmp/gh_checksums.txt > /tmp/gh.sha256 \
+    && test -s /tmp/gh.sha256 \
+    && sha256sum -c /tmp/gh.sha256 \
+    && tar -xzf /tmp/gh.tar.gz -C /usr/local/bin --strip-components=2 \
+        "gh_${GH_VERSION#v}_linux_${TARGETARCH}/bin/gh" \
+    && rm /tmp/gh.tar.gz /tmp/gh_checksums.txt /tmp/gh.sha256 \
+    && git config --system credential."https://github.com".helper "!/usr/local/bin/gh auth git-credential" \
+    && git config --system credential."https://gist.github.com".helper "!/usr/local/bin/gh auth git-credential" \
     && npm install -g bun \
     && npm install -g bash-language-server \
     && npm install -g @ast-grep/cli \
