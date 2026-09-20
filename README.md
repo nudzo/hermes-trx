@@ -21,7 +21,7 @@ An extended multi-architecture container image for [NousResearch Hermes Agent](h
 
 - **HTTPie (`httpie`)**: User-friendly HTTP client for API interaction and testing.
 - **fzf (`fzf`)**: Command-line fuzzy finder.
-- **shfmt (`shfmt`)**: Shell script formatter and parser.
+- **GitHub CLI (`gh`)**: GitHub's official CLI at `/usr/local/bin/gh`, for PRs, issues, releases, and API access. `git` is wired to use `gh` as its HTTPS credential helper, so one token authenticates both.
 - **curl & CA Certificates**: Secure web transfers and up-to-date certificate authorities.
 
 ### 3. Runtimes, AST Tools & Language Servers
@@ -66,6 +66,16 @@ Images are tagged alongside upstream Hermes releases:
 ```bash
   docker pull ghcr.io/nudzo/hermes-trx:v2026.9.11
 ```
+
+### GitHub Authentication
+
+Supply a GitHub token via environment variable — no `gh auth login` needed. Both standard variables work; `gh` accepts either (if both are set, `GH_TOKEN` wins):
+
+```bash
+docker run -it --rm -e GITHUB_TOKEN=<your-PAT> ghcr.io/nudzo/hermes-trx:latest
+```
+
+A fine-grained PAT works as-is: `gh` reads it from the environment on every invocation, and the baked-in system gitconfig routes `git clone/push` over HTTPS through `gh auth git-credential`, which serves the same token. Effective permissions are exactly the token's — for repository work, grant the fine-grained PAT at least **Contents: read/write** (clone/push/PR) and, as needed, **Pull requests / Issues / Workflows: read/write**. No token is stored inside the image.
 
 ---
 
