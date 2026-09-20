@@ -32,7 +32,7 @@ RUN apt-get update \
     && curl --fail --location --retry 3 \
         "https://github.com/cli/cli/releases/download/${GH_VERSION}/gh_${GH_VERSION#v}_checksums.txt" \
         -o /tmp/gh_checksums.txt \
-    && awk -v file="gh_${GH_VERSION#v}_linux_${TARGETARCH}.tar.gz" '$2 == file { print }' /tmp/gh_checksums.txt > /tmp/gh.sha256 \
+    && awk -v file="gh_${GH_VERSION#v}_linux_${TARGETARCH}.tar.gz" '$2 == file { print $1 "  /tmp/gh.tar.gz" }' /tmp/gh_checksums.txt > /tmp/gh.sha256 \
     && test -s /tmp/gh.sha256 \
     && sha256sum -c /tmp/gh.sha256 \
     && tar -xzf /tmp/gh.tar.gz -C /usr/local/bin --strip-components=2 \
