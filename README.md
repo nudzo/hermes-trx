@@ -85,9 +85,8 @@ A fine-grained PAT works as-is: `gh` reads it from the environment on every invo
 GitHub Actions automatically builds and publishes images via [.github/workflows/build-image.yml](.github/workflows/build-image.yml):
 
 - **Triggers**:
-  - Pushes to the `main` branch.
-  - Nightly scheduled cron (`0 3 * * *`) to stay up to date with upstream releases.
-  - Manual trigger via `workflow_dispatch`.
+  - Pushes to the `main` branch and manual `workflow_dispatch` runs always rebuild every tag.
+  - Nightly scheduled cron (`0 3 * * *`) rebuilds a tag only when the upstream `nousresearch/hermes-agent` image digest changed. Each published image records its base digest in the `org.opencontainers.image.base.digest` index annotation. If nothing changed, the run stops after tag resolution.
 - **Release Resolution**:
   - Dynamically fetches the latest stable release of [Obscura](https://github.com/h4ckf0r0day/obscura).
   - Fetches the latest and recent stable release tags of [hermes-agent](https://github.com/NousResearch/hermes-agent).
