@@ -21,8 +21,10 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: read
     outputs:
-      matrix: ${{ steps.tags.outputs.matrix }}
+      matrix: ${{ steps.select.outputs.matrix }}
+      build: ${{ steps.select.outputs.build }}
       obscura_version: ${{ steps.obscura.outputs.release }}
     steps:
       - name: Resolve latest stable Obscura release
@@ -49,17 +51,49 @@ jobs:
               .map((release) => release.tag_name)
               .slice(0, 3);
 
-            const include = [
-              { upstream_tag: 'latest', image_tag: 'latest' },
-              ...stableTags.map((tag) => ({ upstream_tag: tag, image_tag: tag })),
-            ];
+            core.setOutput('tags', JSON.stringify(['latest', ...stableTags]));
 
-            core.info(`Publishing image tags: ${include.map((entry) => entry.image_tag).join(', ')}`);
-            core.setOutput('matrix', JSON.stringify({ include }));
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Scheduled runs rebuild a tag only when the upstream Hermes image digest differs from
+      # the base digest recorded on our published image. Push and manual runs rebuild every tag.
+      - name: Select tags to build
+        id: select
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          TAGS: ${{ steps.tags.outputs.tags }}
+          BASE_IMAGE: docker.io/nousresearch/hermes-agent
+          IMAGE: ghcr.io/${{ github.repository }}
+        run: |
+          set -euo pipefail
+          include='[]'
+          for tag in $(jq -r '.[]' <<<"$TAGS"); do
+            if ! base_digest=$(docker buildx imagetools inspect "${BASE_IMAGE}:${tag}" --format '{{json .Manifest}}' | jq -re .digest); then
+              echo "::warning::Upstream image ${BASE_IMAGE}:${tag} not found, skipping"
+              continue
+            fi
+            built_digest=$(docker buildx imagetools inspect --raw "${IMAGE}:${tag}" 2>/dev/null \
+              | jq -r '.annotations["org.opencontainers.image.base.digest"] // empty' || true)
+            if [[ "$EVENT_NAME" == schedule && "$base_digest" == "$built_digest" ]]; then
+              echo "${tag}: base ${base_digest} unchanged, skipping"
+              continue
+            fi
+            echo "${tag}: base ${base_digest} (published: ${built_digest:-none}), building"
+            include=$(jq -c --arg tag "$tag" --arg digest "$base_digest" \
+              '. + [{upstream_tag: $tag, image_tag: $tag, base_digest: $digest}]' <<<"$include")
+          done
+          echo "matrix=$(jq -c '{include: .}' <<<"$include")" >> "$GITHUB_OUTPUT"
+          echo "build=$(jq -r 'length > 0' <<<"$include")" >> "$GITHUB_OUTPUT"
 
   build-and-push:
     runs-on: ubuntu-latest
     needs: resolve-upstream-tags
+    if: needs.resolve-upstream-tags.outputs.build == 'true'
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.resolve-upstream-tags.outputs.matrix) }}
@@ -88,10 +122,13 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           build-args: |
-            HERMES_VERSION=${{ matrix.upstream_tag }}
+            HERMES_VERSION=${{ matrix.upstream_tag }}@${{ matrix.base_digest }}
             OBSCURA_VERSION=${{ needs.resolve-upstream-tags.outputs.obscura_version }}
           tags: |
             ghcr.io/${{ github.repository }}:${{ matrix.image_tag }}
+          annotations: |
+            index:org.opencontainers.image.base.name=docker.io/nousresearch/hermes-agent:${{ matrix.upstream_tag }}
+            index:org.opencontainers.image.base.digest=${{ matrix.base_digest }}
 
   cleanup-untagged-images:
     runs-on: ubuntu-latest
