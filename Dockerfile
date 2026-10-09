@@ -1,9 +1,14 @@
 ARG HERMES_VERSION=latest
+ARG UV_VERSION=0.12.3
+
+# uv source stage: BuildKit does not expand ARGs in COPY --from, so the
+# pinned image is pulled as an explicit stage (ARG in global scope).
+FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv
+
 FROM nousresearch/hermes-agent:${HERMES_VERSION}
 
 ARG TARGETARCH
 ARG GH_VERSION=v2.101.0
-ARG UV_VERSION=0.12.3
 ARG OBSCURA_VERSION
 
 USER root
@@ -13,7 +18,7 @@ USER root
 # use ("build consumers receive Python environments, never an installer
 # executable"). Ship our own pinned uv — matching pm/lock.json's version —
 # both for the installs below and as a PATH tool, as the base used to provide.
-COPY --from=ghcr.io/astral-sh/uv:${UV_VERSION} /uv /uvx /usr/local/bin/
+COPY --from=uv /uv /uvx /usr/local/bin/
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates curl httpie fzf shfmt \
     && test -n "${OBSCURA_VERSION}" \
