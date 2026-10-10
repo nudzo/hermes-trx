@@ -1,5 +1,5 @@
 ARG HERMES_VERSION=latest
-ARG UV_VERSION=0.12.3
+ARG UV_VERSION=0.13.0
 
 # uv source stage: BuildKit does not expand ARGs in COPY --from, so the
 # pinned image is pulled as an explicit stage (ARG in global scope).
@@ -8,7 +8,7 @@ FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv
 FROM nousresearch/hermes-agent:${HERMES_VERSION}
 
 ARG TARGETARCH
-ARG GH_VERSION=v2.101.0
+ARG GH_VERSION=v2.102.0
 ARG OBSCURA_VERSION
 
 USER root
@@ -16,8 +16,9 @@ USER root
 # The base image no longer ships uv on PATH: upstream's 2026-10 pm toolchain
 # rework stages the pinned uv privately under /opt/hermes/tools for pm's own
 # use ("build consumers receive Python environments, never an installer
-# executable"). Ship our own pinned uv — matching pm/lock.json's version —
-# both for the installs below and as a PATH tool, as the base used to provide.
+# executable"). Ship our own pinned uv as a PATH tool, as the base image
+# used to provide; it is independent of pm's private pin, which stays
+# untouched under /opt/hermes/tools.
 COPY --from=uv /uv /uvx /usr/local/bin/
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates curl httpie fzf shfmt \
@@ -59,8 +60,8 @@ RUN apt-get update \
     && uv pip install --python /opt/hermes/.venv/bin/python \
         pyright \
         "git+https://github.com/derivexyz/derive-py.git@38d8ef6645d7711185b0cd7b64efb85bce8e6158" \
-        TA-Lib==0.7.1 \
-        pyhood==0.12.1 \
+        TA-Lib==0.8.1 \
+        pyhood==0.12.3 \
     && rm -rf /var/lib/apt/lists/*
 
 # USER hermes # base image starting under `root` user
