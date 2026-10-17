@@ -59,7 +59,7 @@ RUN apt-get update \
     && npm install -g @ast-grep/cli \
     && uv pip install --python /opt/hermes/.venv/bin/python \
         pyright \
-        "git+https://github.com/derivexyz/derive-py.git@38d8ef6645d7711185b0cd7b64efb85bce8e6158" \
+        "git+https://github.com/derivexyz/derive-py.git@fad785e6c328746b5f8a8219e14009670bc97a35" \
         TA-Lib==0.8.1 \
         pyhood==0.12.3 \
     && rm -rf /var/lib/apt/lists/*
