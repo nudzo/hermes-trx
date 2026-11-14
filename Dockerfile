@@ -1,5 +1,5 @@
 ARG HERMES_VERSION=latest
-ARG UV_VERSION=0.13.0
+ARG UV_VERSION=0.13.8
 
 # uv source stage: BuildKit does not expand ARGs in COPY --from, so the
 # pinned image is pulled as an explicit stage (ARG in global scope).
@@ -8,7 +8,7 @@ FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv
 FROM nousresearch/hermes-agent:${HERMES_VERSION}
 
 ARG TARGETARCH
-ARG GH_VERSION=v2.102.0
+ARG GH_VERSION=v2.104.0
 ARG OBSCURA_VERSION
 
 USER root
@@ -59,8 +59,8 @@ RUN apt-get update \
     && npm install -g @ast-grep/cli \
     && uv pip install --python /opt/hermes/.venv/bin/python \
         pyright \
-        "git+https://github.com/derivexyz/derive-py.git@fad785e6c328746b5f8a8219e14009670bc97a35" \
-        TA-Lib==0.8.1 \
+        "git+https://github.com/derivexyz/derive-py.git@4d36e888fe4a7e7bd37c0ca85523e83eb1da1e06" \
+        TA-Lib==0.8.3 \
         pyhood==0.12.3 \
     && rm -rf /var/lib/apt/lists/*
 
