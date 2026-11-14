@@ -102,7 +102,7 @@ You can build the Docker image locally using [Dockerfile](Dockerfile):
 ```bash
 # Set target versions
 export HERMES_VERSION=latest
-export OBSCURA_VERSION=v0.2.6
+export OBSCURA_VERSION=v0.2.7
 
 # Build with Docker Buildx
 docker build \
